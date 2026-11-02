@@ -17,6 +17,8 @@ function markup(packet,state,item={}){
 }
 function hydrate(){
  const board=document.querySelector('.legacy-method-explorer');if(!board)return;
+ const terrain=board.querySelector('[data-method-terrain]');
+ if(terrain)clearMethodHolonHover(terrain);
  for(const element of board.querySelectorAll('[data-governed-source-file]')){
   const text=patch(element.dataset.governedSourceFile);const pre=document.createElement('pre');pre.textContent=text||'No changed-file patch was recorded for this baseline source.';element.replaceChildren(pre);
  }

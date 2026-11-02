@@ -322,12 +322,11 @@ function clearMethodHolonHover(terrain,skipPinnedRestore=false){
  if(!skipPinnedRestore&&terrain.dataset.pinnedMethod){const pinned=[...terrain.querySelectorAll('.workflow-impact-method')].find(node=>node.dataset.methodId===terrain.dataset.pinnedMethod);if(pinned){showMethodHolonHover(pinned,true);return;}}
  if(!skipPinnedRestore&&terrain.dataset.pinnedHolon){const pinned=[...terrain.querySelectorAll('[data-holon-viewer-id]')].find(node=>node.dataset.holonViewerId===terrain.dataset.pinnedHolon);if(pinned){showHolonViewerPreview(pinned,true);return;}}
  const status=terrain.querySelector('[data-holon-hover-status]');
- if(status)status.textContent=terrain.dataset.compactBoundary?'Select a changed method to explore the behavior it could affect.':'Hover a method to inspect its holon memberships; click to open its source changes.';
+ if(status)status.textContent='Hover or focus a method to highlight its holons; click to keep them highlighted.';
 }
 function showMethodHolonHover(method,pinned=false){
  const terrain=method?.closest('[data-method-terrain]');if(!terrain)return;
  clearMethodHolonHover(terrain,true);
- if(terrain.dataset.compactBoundary)return;
  const holonIds=String(method.dataset.holonIds||'').split(/\s+/).filter(Boolean),label=method.dataset.methodLabel||method.dataset.methodId;
  method.classList.add('holon-origin');
  const status=terrain.querySelector('[data-holon-hover-status]');

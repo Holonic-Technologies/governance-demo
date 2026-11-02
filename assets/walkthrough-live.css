@@ -445,3 +445,8 @@ details.quiet summary{cursor:pointer;color:var(--muted)}details.quiet summary b{
 .governance-page .intent-term{font-size:.94em;padding:1px 4px;border-radius:3px;background:var(--sunk);color:inherit}
 .governance-page .intent-section ul{padding-left:22px;margin:6px 0 0}
 .governance-page .intent-section li+li{margin-top:8px}
+
+/* Holon selection takes precedence over the selected objective's dimming. */
+.legacy-method-explorer .is-holon-hovering .workflow-impact-method.holon-peer,
+.legacy-method-explorer .is-holon-hovering .workflow-impact-method.direct-pr-intersection,
+.legacy-method-explorer .is-holon-hovering .workflow-method-holon-ring.is-active{opacity:1!important}
