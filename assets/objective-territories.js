@@ -260,8 +260,48 @@ function boundaryChangeLinks(packet,terrain,sourceChanges){
  }
  return links;
 }
+// Restore the original single-disc service slices for the newer spiral packets.
+// Coordinates are presentation only: preserve row order, IDs, edges and memberships.
+function holonPieTerrain(terrain){
+ if(!terrain||!['accepted-workflow-terrain-1','accepted-witness-terrain-1'].includes(terrain.layout_version)||!terrain.methods.length)return terrain;
+ const count=terrain.methods.length,lattice=Math.max(40,Math.ceil(Math.sqrt(count))),points=[];
+ for(let y=-lattice;y<=lattice;y++)for(let x=-lattice;x<=lattice;x++){
+  const px=(x+((y%2+2)%2)/2)/lattice,py=y/lattice;
+  if(px*px+py*py<=1)points.push([px,py]);
+ }
+ const radius=p=>p[0]*p[0]+p[1]*p[1];
+ points.sort((a,b)=>radius(a)-radius(b)||a[0]-b[0]||a[1]-b[1]);
+ points.length=count;
+ const scale=Math.sqrt(Math.max(...points.map(radius)))||1;
+ points.sort((a,b)=>Math.atan2(a[1],a[0])-Math.atan2(b[1],b[0])||radius(a)-radius(b)||a[0]-b[0]||a[1]-b[1]);
+ const memberships=new Map();
+ for(const [id,indices] of terrain.native_holons||[])for(const index of indices)if(!memberships.has(index))memberships.set(index,id);
+ const groups=new Map();
+ terrain.methods.forEach((row,index)=>{if(!groups.has(row[3]))groups.set(row[3],[]);groups.get(row[3]).push(index);});
+ const methods=terrain.methods.map(row=>row.slice());
+ function place(clusters,positions){
+  if(clusters.length===1){
+   positions.sort((a,b)=>a[1]-b[1]||a[0]-b[0]);
+   clusters[0].forEach((index,i)=>{methods[index][4]=+(360+positions[i][0]/scale*320).toFixed(2);methods[index][5]=+(285+positions[i][1]/scale*245).toFixed(2);});
+   return;
+  }
+  const middle=Math.floor(clusters.length/2),size=clusters.slice(0,middle).reduce((n,c)=>n+c.length,0);
+  const span=axis=>Math.max(...positions.map(p=>p[axis]))-Math.min(...positions.map(p=>p[axis]));
+  const axis=span(0)>=span(1)?0:1;
+  positions.sort((a,b)=>a[axis]-b[axis]||a[1-axis]-b[1-axis]);
+  place(clusters.slice(0,middle),positions.slice(0,size));place(clusters.slice(middle),positions.slice(size));
+ }
+ let at=0;
+ for(const [,indices] of [...groups].sort(([a],[b])=>a-b)){
+  const clusters=new Map();
+  for(const index of indices){const key=memberships.get(index)||terrain.files[methods[index][1]];if(!clusters.has(key))clusters.set(key,[]);clusters.get(key).push(index);}
+  place([...clusters].sort(([a],[b])=>String(a)<String(b)?-1:String(a)>String(b)?1:0).map(([,rows])=>rows),points.slice(at,at+indices.length));at+=indices.length;
+ }
+ return {...terrain,methods};
+}
+
 function workflowMethodImpactMarkup(doc,selected,workflows,state){
- const t=candidateMethodTerrain(doc.territory,doc.source_packet),map=doc.holon_map;
+ const t=candidateMethodTerrain(holonPieTerrain(doc.territory),doc.source_packet),map=doc.holon_map;
  if(!t||!map)return '<p class="note">This evidence package does not include the method terrain and holon mappings.</p>';
  const methods=new Map(map.methods.map(row=>[row.id,row]));
  const sourceChanges=terrainSourceChanges(doc.source_packet,t);
