@@ -30,7 +30,7 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           PR_NUMBER: ${{ inputs.pull_request }}
           HEAD_SHA: ${{ inputs.head_sha }}
-          STATUS_PAGE_URL: ${{ vars.CODEINTENT_STATUS_PAGE_URL || 'https://scottswindell-hub.github.io/ftgo-application/' }}
+          STATUS_PAGE_URL: ${{ vars.CODEINTENT_STATUS_PAGE_URL || format('https://{0}.github.io/{1}/', github.repository_owner, github.event.repository.name) }}
         shell: bash
         run: |
           set -euo pipefail
