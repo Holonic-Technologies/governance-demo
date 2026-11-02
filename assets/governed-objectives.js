@@ -314,8 +314,26 @@ function governanceSelectedEvidence(area,packet,options){
  return `<details class="objective-inspect"><summary>Accepted contract and source evidence</summary>${intentDslMarkup({id:area.id,statement:area.statement,service:area.service,entry_method:area.entry_method,required_assignments:area.required_assignments},values)}${missing.length?'<p class="note">Highlighted tokens identify the missing required witness. The recorded result is evidence unavailable, not a confirmed violation.</p>':''}${story?`<button data-review-source="${esc(story.id)}">Inspect source diff</button> <button data-open-region="${esc(story.id)}">Explain in Review → Intent diffs</button>`:''}<p>No parent business-objective link is supplied for this contract.</p><pre>${esc(JSON.stringify(area.result||{status:'not_assessed'},null,2))}</pre></details>`;
 }
 const METHOD_HOLON_COLORS=['#8250df','#0969da','#1a7f37','#bf8700','#cf222e','#0e9aa7','#d63384','#bc4c00'];
+function clearWorkflowHover(terrain){
+ terrain.querySelectorAll('.workflow-hover-peer,.workflow-hover-origin').forEach(node=>node.classList.remove('workflow-hover-peer','workflow-hover-origin'));
+ const status=terrain.querySelector('[data-workflow-hover-status]');
+ if(status)status.textContent='Hover or focus a method to highlight the other recorded members of its workflows in purple.';
+}
+function showWorkflowHover(method){
+ const terrain=method.closest('[data-method-terrain]');
+ clearWorkflowHover(terrain);
+ const ids=new Set(String(method.dataset.workflowIds||'').split(/\s+/).filter(Boolean));
+ method.classList.add('workflow-hover-origin');
+ let count=0;
+ terrain.querySelectorAll('.workflow-impact-method').forEach(node=>{
+  if(node!==method&&String(node.dataset.workflowIds||'').split(/\s+/).some(id=>ids.has(id))){node.classList.add('workflow-hover-peer');count++;}
+ });
+ const status=terrain.querySelector('[data-workflow-hover-status]');
+ if(status)status.textContent=ids.size?`${method.dataset.methodLabel}: ${count} other recorded methods in ${ids.size} workflow${ids.size===1?'':'s'} — ${method.dataset.workflowNames}`:`${method.dataset.methodLabel}: no workflow membership recorded.`;
+}
 function clearMethodHolonHover(terrain,skipPinnedRestore=false){
  if(!terrain)return;
+ if(terrain.dataset.workflowHighlight){clearWorkflowHover(terrain);return;}
  terrain.classList.remove('is-holon-hovering');
  terrain.querySelectorAll('.workflow-impact-method').forEach(node=>node.classList.remove('holon-peer','holon-origin'));
  terrain.querySelectorAll('.workflow-method-holon-ring').forEach(node=>{node.classList.remove('is-active');node.style.removeProperty('--holon-color');node.setAttribute('r','4');});
@@ -326,7 +344,7 @@ function clearMethodHolonHover(terrain,skipPinnedRestore=false){
 }
 function showMethodHolonHover(method,pinned=false){
  const terrain=method?.closest('[data-method-terrain]');if(!terrain)return;
- if(terrain.dataset.workflowHighlight)return;
+ if(terrain.dataset.workflowHighlight){if(!pinned)showWorkflowHover(method);return;}
  clearMethodHolonHover(terrain,true);
  const holonIds=String(method.dataset.holonIds||'').split(/\s+/).filter(Boolean),label=method.dataset.methodLabel||method.dataset.methodId;
  method.classList.add('holon-origin');
@@ -411,7 +429,7 @@ let holonViewerDrag=null;
 document.addEventListener('pointerdown',event=>{const header=event.target.closest?.('[data-holon-viewer-dialog]>header');if(!header||event.target.closest?.('button,input'))return;const viewer=header.parentElement,rect=viewer.getBoundingClientRect();holonViewerDrag={viewer,dx:event.clientX-rect.left,dy:event.clientY-rect.top};viewer.style.margin='0';viewer.style.right='auto';viewer.style.bottom='auto';viewer.style.left=`${rect.left}px`;viewer.style.top=`${rect.top}px`;viewer.classList.add('dragging');event.preventDefault();});
 document.addEventListener('pointermove',event=>{if(!holonViewerDrag)return;const {viewer,dx,dy}=holonViewerDrag,rect=viewer.getBoundingClientRect(),left=Math.max(0,Math.min(window.innerWidth-rect.width,event.clientX-dx)),top=Math.max(0,Math.min(window.innerHeight-rect.height,event.clientY-dy));viewer.style.left=`${left}px`;viewer.style.top=`${top}px`;});
 document.addEventListener('pointerup',()=>{holonViewerDrag?.viewer.classList.remove('dragging');holonViewerDrag=null;});
-document.addEventListener('mousemove',event=>{const method=nearestTerrainMethod(event);if(method)showMethodHolonHover(method);});
+document.addEventListener('mousemove',event=>{const method=nearestTerrainMethod(event);if(method)showMethodHolonHover(method);else{const terrain=event.target.closest?.('[data-workflow-highlight]');if(terrain)clearWorkflowHover(terrain);}});
 document.addEventListener('mouseout',event=>{const method=event.target.closest?.('.workflow-impact-method[data-method-id]');if(method&&!method.contains(event.relatedTarget))clearMethodHolonHover(method.closest('[data-method-terrain]'));});
 document.addEventListener('focusin',event=>{const method=event.target.closest?.('.workflow-impact-method[data-method-id]');if(method)showMethodHolonHover(method);});
 document.addEventListener('focusout',event=>{const method=event.target.closest?.('.workflow-impact-method[data-method-id]');if(method&&!method.contains(event.relatedTarget))clearMethodHolonHover(method.closest('[data-method-terrain]'));});

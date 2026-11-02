@@ -458,3 +458,9 @@ details.quiet summary{cursor:pointer;color:var(--muted)}details.quiet summary b{
 .legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.direct-pr-intersection{opacity:1!important}
 .legacy-method-explorer [data-workflow-highlight] .governed-workflow-member:not(.direct-pr-intersection) .workflow-method-dot{fill:#0969da;r:3}
 .governed-workflow-ring{fill:none;stroke:#0969da;stroke-width:1.5;pointer-events:none}
+
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.workflow-hover-peer,
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.workflow-hover-origin{opacity:1!important}
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.workflow-hover-peer:not(.direct-pr-intersection) .workflow-method-dot{fill:#8250df;stroke:#8250df;r:3.5}
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.workflow-hover-origin .workflow-method-dot{stroke:#8250df;stroke-width:2;r:4}
+[data-workflow-hover-status]{min-height:2.5em;overflow-wrap:anywhere}
