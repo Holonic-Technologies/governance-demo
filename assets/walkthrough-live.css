@@ -450,3 +450,11 @@ details.quiet summary{cursor:pointer;color:var(--muted)}details.quiet summary b{
 .legacy-method-explorer .is-holon-hovering .workflow-impact-method.holon-peer,
 .legacy-method-explorer .is-holon-hovering .workflow-impact-method.direct-pr-intersection,
 .legacy-method-explorer .is-holon-hovering .workflow-method-holon-ring.is-active{opacity:1!important}
+
+.governed-workflow-summary{display:grid;gap:4px;padding:12px;color:var(--ink)}
+.governed-workflow-summary span{font-size:12px;color:var(--muted)}
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method{opacity:.1!important}
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.governed-workflow-member,
+.legacy-method-explorer [data-workflow-highlight] .workflow-impact-method.direct-pr-intersection{opacity:1!important}
+.legacy-method-explorer [data-workflow-highlight] .governed-workflow-member:not(.direct-pr-intersection) .workflow-method-dot{fill:#0969da;r:3}
+.governed-workflow-ring{fill:none;stroke:#0969da;stroke-width:1.5;pointer-events:none}

@@ -326,6 +326,7 @@ function clearMethodHolonHover(terrain,skipPinnedRestore=false){
 }
 function showMethodHolonHover(method,pinned=false){
  const terrain=method?.closest('[data-method-terrain]');if(!terrain)return;
+ if(terrain.dataset.workflowHighlight)return;
  clearMethodHolonHover(terrain,true);
  const holonIds=String(method.dataset.holonIds||'').split(/\s+/).filter(Boolean),label=method.dataset.methodLabel||method.dataset.methodId;
  method.classList.add('holon-origin');
