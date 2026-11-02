@@ -2,6 +2,6 @@
  "backend_image": "241765568243.dkr.ecr.us-east-1.amazonaws.com/drift-gate-semantic@sha256:ee0b514403a8b242f2e201b0e73941b712d90c6125813183895a319bd71676cc",
  "schema": "review-ui-release-v1",
  "source_branch": "ui/restore-holon-pie",
- "ui_commit": "22b5372c5d4e4a27028377ef10f7c42ee689dffe",
+ "ui_commit": "c16266fca8e75198e617a7ecd22f476f46f0a904",
  "ui_dirty": "false"
 }

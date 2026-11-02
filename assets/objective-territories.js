@@ -291,13 +291,24 @@ function holonPieTerrain(terrain){
   positions.sort((a,b)=>a[axis]-b[axis]||a[1-axis]-b[1-axis]);
   place(clusters.slice(0,middle),positions.slice(0,size));place(clusters.slice(middle),positions.slice(size));
  }
+ const pieSlices=[];
+ const angle=p=>Math.atan2(p[1],p[0]);
  let at=0;
- for(const [,indices] of [...groups].sort(([a],[b])=>a-b)){
+ for(const [service,indices] of [...groups].sort(([a],[b])=>a-b)){
+  const end=at+indices.length;
+  pieSlices.push({service,start:at?(angle(points[at-1])+angle(points[at]))/2:-Math.PI,end:end<count?(angle(points[end-1])+angle(points[end]))/2:Math.PI});
   const clusters=new Map();
   for(const index of indices){const key=memberships.get(index)||terrain.files[methods[index][1]];if(!clusters.has(key))clusters.set(key,[]);clusters.get(key).push(index);}
   place([...clusters].sort(([a],[b])=>String(a)<String(b)?-1:String(a)>String(b)?1:0).map(([,rows])=>rows),points.slice(at,at+indices.length));at+=indices.length;
  }
- return {...terrain,methods};
+ return {...terrain,methods,pieSlices};
+}
+
+// Exact elliptical arcs replace lattice hulls; method coordinates stay untouched.
+function pieSlicePath(start,end){
+ const point=a=>`${(360+330*Math.cos(a)).toFixed(2)} ${(285+255*Math.sin(a)).toFixed(2)}`;
+ if(end-start>=2*Math.PI-1e-8)return 'M 30 285 A 330 255 0 1 1 690 285 A 330 255 0 1 1 30 285 Z';
+ return `M 360 285 L ${point(start)} A 330 255 0 ${end-start>Math.PI?1:0} 1 ${point(end)} Z`;
 }
 
 function governedWorkflowMethods(workflow){
@@ -319,7 +330,12 @@ function workflowMethodImpactMarkup(doc,selected,workflows,state){
  const impactedServices=new Set(t.methods.filter(row=>sourceChanges.mapped.has(row[0])).map(row=>row[3]));
  const servicePoints=t.services.map((service,index)=>t.methods.filter(row=>row[3]===index).map(row=>[row[4],row[5]]));
  const architectureServices=new Set((doc.architecture||[]).flatMap(row=>row.anchors||[]));
- const contours=servicePoints.map((points,index)=>points.length>2&&t.services[index][0]!=='candidate-unmapped'?`<polygon points="${territoryHull(points).map(point=>point.join(',')).join(' ')}" class="territory-service ${architectureServices.has(t.services[index][0])?'governed':''}${doc.compact_review&&impactedServices.has(index)?' boundary-impacted-service':''}${objectiveFocused&&!focusServices.has(index)?' objective-region-dimmed':''}"/>`:'').join('');
+ const contours=servicePoints.map((points,index)=>{
+  if(!points.length||t.services[index][0]==='candidate-unmapped')return '';
+  const classes=`territory-service ${architectureServices.has(t.services[index][0])?'governed':''}${doc.compact_review&&impactedServices.has(index)?' boundary-impacted-service':''}${objectiveFocused&&!focusServices.has(index)?' objective-region-dimmed':''}`;
+  const slice=t.pieSlices?.find(row=>row.service===index);
+  return slice?`<path d="${pieSlicePath(slice.start,slice.end)}" class="${classes} smooth-service-slice"/>`:points.length>2?`<polygon points="${territoryHull(points).map(point=>point.join(',')).join(' ')}" class="${classes}"/>`:'';
+ }).join('');
  const labels=servicePoints.map((points,index)=>{if(!points.length)return '';const x=points.reduce((sum,row)=>sum+row[0],0)/points.length,y=points.reduce((sum,row)=>sum+row[1],0)/points.length;return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" class="territory-service-label ${objectiveFocused&&!focusServices.has(index)?'objective-region-dimmed':''}">${esc(t.services[index][1].replace(/^ftgo-/,''))}</text>`;}).join('');
  const evidenceRows=[];
  for(const workflow of workflows)for(const obligation of workflow.obligations)for(const evidence of obligation.evidence||[])evidenceRows.push({...evidence,workflow,obligation});
