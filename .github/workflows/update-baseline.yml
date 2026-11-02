@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   update:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master' && vars.ENABLE_BASELINE_ADMINISTRATION == 'true'
     environment: baseline-maintenance
     runs-on: ubuntu-24.04
     timeout-minutes: 12

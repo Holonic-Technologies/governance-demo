@@ -18,6 +18,7 @@ permissions:
 
 jobs:
   update-rule:
+    if: vars.ENABLE_GOVERNANCE_ADMINISTRATION == 'true'
     runs-on: ubuntu-latest
     environment: governance-rules-${{ inputs.operation }}
     env:
